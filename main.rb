@@ -42,3 +42,4 @@ user_data = response.parsed
 p "Debug"
 p response.status
 p user_data['usual_full_name']
+p user_data['image_url']
