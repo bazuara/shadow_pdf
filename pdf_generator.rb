@@ -20,6 +20,8 @@ percent_level = '45'
 url_pic = "https://cdn.intra.42.fr/users/bazuara.jpg"
 coa_name = "Metropolis"
 coa_color = 'FF0000'
+piscine_month = 'September'
+piscine_year = '2019'
 
 #palceholder images
 coa_image = './sources/metropolis_icon.png'
@@ -80,24 +82,30 @@ Prawn::Document.generate('assignment.pdf') do |pdf|
 
   pdf.fill_color white
   pdf.text_box "Level #{current_level} - #{percent_level}%", size: 10, at: [67, 456]
-  
+ 
+
+  #Piscine 
+  pdf.fill_color white
+  pdf.text_box "Student since: #{piscine_month}, #{piscine_year}", size: 10, at: [10, 427]
+
+
   #Coalition
   pdf.fill_color white
-  pdf.text_box "Member of:", size: 10, at: [10, 430]
-  pdf.rounded_rectangle [30, 410], 140, 50, 5 
+  pdf.text_box "Member of:", size: 10, at: [10, 405]
+  pdf.rounded_rectangle [30, 385], 140, 50, 5 
   pdf.fill_color coa_color
   pdf.fill
   pdf.fill_color white
-  pdf.text_box coa_name, size: 14, at: [85, 394]
+  pdf.text_box coa_name, size: 14, at: [85, 369]
   #TODO replace fix png with white rendered svg
-  pdf.image './sources/metropolis_icon.png', at: [45, 403], height: 35
+  pdf.image './sources/metropolis_icon.png', at: [45, 378], height: 35
 
   #Contact
   pdf.fill_color white
-  pdf.text_box "Contact #{login}:", size: 10, at: [10, 350] 
-  pdf.text_box email, size: 10, at: [10, 335] 
+  pdf.text_box "Contact #{login}:", size: 10, at: [10, 325] 
+  pdf.text_box email, size: 10, at: [10, 310] 
   #TODO replace qr with user generated
-  pdf.image qr_image, at: [10, 305], width: 180
+  pdf.image qr_image, at: [20, 280], width: 160
   
 
 
