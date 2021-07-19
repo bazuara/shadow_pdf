@@ -12,10 +12,18 @@ dark_grey = '000000'
 
 #API replacement variables
 user_name = 'user_name'.upcase
+login = 'bazuara'
+email = 'bazuara@student.42madrid.com'
 rank = 'Cadet'
 current_level = '5'
 percent_level = '45'
 url_pic = "https://cdn.intra.42.fr/users/bazuara.jpg"
+coa_name = "Metropolis"
+coa_color = 'FF0000'
+
+#palceholder images
+coa_image = './sources/metropolis_icon.png'
+qr_image = './sources/qrcode.png'
 
 
 Prawn::Document.generate('assignment.pdf') do |pdf|
@@ -38,10 +46,10 @@ Prawn::Document.generate('assignment.pdf') do |pdf|
 
   #Image on green rectangle 
   #TODO: Round centered picture
+  #TODO: replace get image and delete image with ruby methods
   puts `wget #{url_pic} -O temp_profile.jpg`
   pdf.image "./temp_profile.jpg", at: [50, 687.5], width: 100
   puts `rm ./temp_profile.jpg`
-  #TODO: replace get image and delete image with ruby methods
  
   #Global text config
   pdf.font_families.update(
@@ -72,6 +80,26 @@ Prawn::Document.generate('assignment.pdf') do |pdf|
 
   pdf.fill_color white
   pdf.text_box "Level #{current_level} - #{percent_level}%", size: 10, at: [67, 456]
+  
+  #Coalition
+  pdf.fill_color white
+  pdf.text_box "Member of:", size: 10, at: [10, 430]
+  pdf.rounded_rectangle [30, 410], 140, 50, 5 
+  pdf.fill_color coa_color
+  pdf.fill
+  pdf.fill_color white
+  pdf.text_box coa_name, size: 14, at: [85, 394]
+  #TODO replace fix png with white rendered svg
+  pdf.image './sources/metropolis_icon.png', at: [45, 403], height: 35
+
+  #Contact
+  pdf.fill_color white
+  pdf.text_box "Contact #{login}:", size: 10, at: [10, 350] 
+  pdf.text_box email, size: 10, at: [10, 335] 
+  #TODO replace qr with user generated
+  pdf.image qr_image, at: [10, 305], width: 180
+  
+
 
   #Address
   pdf.fill_color white
