@@ -200,18 +200,22 @@ Prawn::Document.generate('assignment.pdf') do |pdf|
         project['validated?'] == true)
       p project['project']['name']
       pdf.text_box project['project']['name'].capitalize, size: 12, at: [220, (start_pos - 30  - offset)]
-      pdf.text_box "Description", size: 10, at: [220, (start_pos - 48 - offset)]
+      #load description and skills
+      raw_project = token.get("/v2/projects/#{project['project']['slug']}")
+      project_info = raw_project.parsed
+      text_info =  project_info['project_sessions'].first['description'].gsub(/\n/," ")
+      pdf.text_box text_info, size: 6, at: [220, (start_pos - 48 - offset)], width: 320
       pdf.text_box "Score #{project['final_mark'].to_s}%", size: 10, at: [470, (start_pos - 30 - offset)], align: :right
-      pdf.text_box "Skills:", size: 10, at: [220, (start_pos - 48 - offset)], align: :right
+      #pdf.text_box "Skills:", size: 10, at: [220, (start_pos - 48 - offset)], align: :right
       i += 1
       if (i >= max_list)
         break
       end
-      offset += 40
+      offset += 47
     end
   end
   #Skills
-  pdf.image "./spider_graph.png", at: [200, 270], width: 340
+  pdf.image "./spider_graph.png", at: [230, 220], width: 280
 
 
 
