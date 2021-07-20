@@ -44,11 +44,6 @@ if response.status != 200
 end
 user_data = response.parsed
 coa_data = raw_coa.parsed.first
-p "Debug"
-p response.status
-p user_data['usual_full_name']
-p user_data['image_url']
-
 
 #API replacement variables
 user_name = user_data['usual_full_name']
@@ -58,8 +53,14 @@ rank = user_data['cursus_users'].last['grade']
 current_level = user_data['cursus_users'].last['level'].to_i
 percent_level = (((user_data['cursus_users'].last['level'].to_f) - current_level) * 100).to_i
 url_pic = user_data['image_url']
-coa_name = coa_data['name']
-coa_color = coa_data['color'][1..-1]
+if coa_data == nil
+  coa_name = "No coalition"
+  coa_color = "17adad"
+
+else
+  coa_name = coa_data['name']
+  coa_color = coa_data['color'][1..-1]
+end
 piscine_month = user_data['pool_month']
 piscine_year = user_data['pool_year']
 actual_cursus = user_data['cursus_users'].last['cursus_id']
@@ -90,7 +91,7 @@ end
 graff.write("spider_graph.png")
 
 #Generate pdf
-Prawn::Document.generate('assignment.pdf') do |pdf|
+Prawn::Document.generate("#{login}_api_cv_.pdf") do |pdf|
 
   #generate new rectangle [postition], w, h
 
@@ -112,9 +113,9 @@ Prawn::Document.generate('assignment.pdf') do |pdf|
   #Image on green rectangle 
   #TODO: replace get image and delete image with ruby methods
   puts `wget #{url_pic} -O temp_profile.jpg 2> /dev/null`
-  puts `convert -scale 400 -gravity Center -crop 400x400+0+0 ./temp_profile.jpg ./circle_profile.png`
-  puts `convert -size 400x400 xc:Black -fill White -draw 'circle 200 200 200 1' -alpha copy mask.png`
-  puts `convert circle_profile.png -gravity Center mask.png -compose CopyOpacity -composite -trim circle_profile.png`
+  puts `convert -scale 400 -gravity Center -crop 400x400+0+0 ./temp_profile.jpg ./circle_profile.png 2> /dev/null`
+  puts `convert -size 400x400 xc:Black -fill White -draw 'circle 200 200 200 1' -alpha copy mask.png 2> /dev/null`
+  puts `convert circle_profile.png -gravity Center mask.png -compose CopyOpacity -composite -trim circle_profile.png 2> /dev/null`
   pdf.image "./circle_profile.png", at: [12, 700], width: 175
  
   #Global text config
@@ -128,15 +129,18 @@ Prawn::Document.generate('assignment.pdf') do |pdf|
 
   #Text on green rectangle
   pdf.fill_color white
-  #pdf.stroke_color green
-  #pdf.line_width = 1
+  pdf.stroke_color green
+  pdf.line_width = 0.5
   #pdf.cap_style :butt
-  pdf.text_box user_name, styles: :bold, size: 22, at: [20, 570], width: 180 #mode: :fill_stroke
+  pdf.text_box user_name, styles: :bold, size: 22, at: [20, 570], width: 180, mode: :fill_stroke
+  if (rank == nil)
+    rank = 'other'
+  end
   pdf.text_box 'Rank: ' + rank, styles: :normal, size: 16, at: [20, 520]
 
   #Image on gray rectangle
   pdf.image "./sources/Logo-42.png", at: [10, 100], width: 175
-  
+
   # Level bar
   pdf.text_box 'Current Level:', size: 10, at: [10, 480]
   pdf.rounded_rectangle [10, 460], 180, 20, 5
@@ -149,9 +153,9 @@ Prawn::Document.generate('assignment.pdf') do |pdf|
 
   pdf.fill_color white
   pdf.text_box "Level #{current_level} - #{percent_level}%", size: 10, at: [67, 456]
- 
 
-  #Piscine 
+
+  #Piscine
   pdf.fill_color white
   pdf.text_box "Student since: #{piscine_month}, #{piscine_year}", size: 10, at: [10, 427]
 
@@ -159,7 +163,7 @@ Prawn::Document.generate('assignment.pdf') do |pdf|
   #Coalition
   pdf.fill_color white
   pdf.text_box "Member of:", size: 10, at: [10, 405]
-  pdf.rounded_rectangle [30, 385], 140, 50, 5 
+  pdf.rounded_rectangle [30, 385], 140, 50, 5
   pdf.fill_color coa_color
   pdf.fill
   pdf.fill_color white
@@ -169,8 +173,8 @@ Prawn::Document.generate('assignment.pdf') do |pdf|
 
   #Contact
   pdf.fill_color white
-  pdf.text_box "Contact #{login}:", size: 10, at: [10, 325] 
-  pdf.text_box email, size: 10, at: [10, 310] 
+  pdf.text_box "Contact #{login}:", size: 10, at: [10, 325]
+  pdf.text_box email, size: 10, at: [10, 310]
   #TODO replace qr with user generated
   qrcode = RQRCode::QRCode.new("mailto:#{email}")
   png = qrcode.as_png(
@@ -198,7 +202,6 @@ Prawn::Document.generate('assignment.pdf') do |pdf|
   user_data['projects_users'].each do |project|
     if (project['cursus_ids'] == [actual_cursus] &&
         project['validated?'] == true)
-      p project['project']['name']
       pdf.text_box project['project']['name'].capitalize, size: 12, at: [220, (start_pos - 30  - offset)]
       #load description and skills
       raw_project = token.get("/v2/projects/#{project['project']['slug']}")
