@@ -62,6 +62,7 @@ coa_name = coa_data['name']
 coa_color = coa_data['color'][1..-1]
 piscine_month = user_data['pool_month']
 piscine_year = user_data['pool_year']
+actual_cursus = user_data['cursus_users'].last['cursus_id']
 
 #palceholder images
 coa_image = './sources/metropolis_icon.png'
@@ -187,10 +188,31 @@ Prawn::Document.generate('assignment.pdf') do |pdf|
   IO.binwrite("./qr_image.png", png.to_s)
   pdf.image "./qr_image.png", at: [20, 280], width: 160
 
+  #Latest projects
+  start_pos = 700
+  pdf.fill_color gray
+  pdf.text_box "Latest projects", size: 18, at: [220, start_pos]
+  offset = 0
+  max_list = 10
+  i = 0
+  user_data['projects_users'].each do |project|
+    if (project['cursus_ids'] == [actual_cursus] &&
+        project['validated?'] == true)
+      p project['project']['name']
+      pdf.text_box project['project']['name'].capitalize, size: 12, at: [220, (start_pos - 30  - offset)]
+      pdf.text_box "Description", size: 10, at: [220, (start_pos - 48 - offset)]
+      pdf.text_box "Score #{project['final_mark'].to_s}%", size: 10, at: [470, (start_pos - 30 - offset)], align: :right
+      pdf.text_box "Skills:", size: 10, at: [220, (start_pos - 48 - offset)], align: :right
+      i += 1
+      if (i >= max_list)
+        break
+      end
+      offset += 40
+    end
+  end
   #Skills
-  
   pdf.image "./spider_graph.png", at: [200, 270], width: 340
-  
+
 
 
   #Address
