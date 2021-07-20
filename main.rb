@@ -4,6 +4,8 @@ require 'yaml'
 require 'oauth2'
 require 'json'
 require 'prawn'
+require 'rqrcode'
+require 'gruff'
 
 
 # Load credentials
@@ -47,8 +49,6 @@ p response.status
 p user_data['usual_full_name']
 p user_data['image_url']
 
-#PDF generation
-
 
 #API replacement variables
 user_name = user_data['usual_full_name']
@@ -65,7 +65,6 @@ piscine_year = user_data['pool_year']
 
 #palceholder images
 coa_image = './sources/metropolis_icon.png'
-qr_image = './sources/qrcode.png'
 
 #Colors
 green = coa_color#'00babc'
@@ -74,8 +73,25 @@ gray = '4E5566'
 clear_gray = 'E7E7E7'
 dark_grey = '000000'
 
+#Generate skill image
+
+max_scale = 5
+graff = Gruff::Spider.new(max_scale)
+graff.transparent_background = true
+graff.title = "Skills"
+graff.legend_font_size = 8
+graff.font_color = '#' + gray
+graff.marker_color = '#' + green
+
+user_data['cursus_users'].last['skills'].each do |skill|
+  graff.data skill['name'], skill['level'], '#' + coa_color
+end
+graff.write("spider_graph.png")
+
+#Generate pdf
 Prawn::Document.generate('assignment.pdf') do |pdf|
-#generate new rectangle [postition], w, h
+
+  #generate new rectangle [postition], w, h
 
   #main rectangle
   pdf.rectangle [0, 720], 200, 226
@@ -99,7 +115,6 @@ Prawn::Document.generate('assignment.pdf') do |pdf|
   puts `convert -size 400x400 xc:Black -fill White -draw 'circle 200 200 200 1' -alpha copy mask.png`
   puts `convert circle_profile.png -gravity Center mask.png -compose CopyOpacity -composite -trim circle_profile.png`
   pdf.image "./circle_profile.png", at: [12, 700], width: 175
-  puts `rm ./temp_profile.jpg ./circle_profile*.png ./mask.png`
  
   #Global text config
   pdf.font_families.update(
@@ -156,7 +171,25 @@ Prawn::Document.generate('assignment.pdf') do |pdf|
   pdf.text_box "Contact #{login}:", size: 10, at: [10, 325] 
   pdf.text_box email, size: 10, at: [10, 310] 
   #TODO replace qr with user generated
-  pdf.image qr_image, at: [20, 280], width: 160
+  qrcode = RQRCode::QRCode.new("mailto:#{email}")
+  png = qrcode.as_png(
+    bit_depth: 1,
+    border_modules: 1,
+    color_mode: ChunkyPNG::COLOR_GRAYSCALE,
+    color: "black",
+    file: nil,
+    fill: "white",
+    module_px_size: 6,
+    resize_exactly_to: false,
+    resize_gte_to: false,
+    size: 400
+  )
+  IO.binwrite("./qr_image.png", png.to_s)
+  pdf.image "./qr_image.png", at: [20, 280], width: 160
+
+  #Skills
+  
+  pdf.image "./spider_graph.png", at: [200, 270], width: 340
   
 
 
@@ -167,4 +200,6 @@ Prawn::Document.generate('assignment.pdf') do |pdf|
   pdf.text_box '28050 Madrid', size: 8, at: [10, 30]
   pdf.text_box 'España', size: 8, at: [10, 20]
 
+  #Cleanup
+  puts `rm ./temp_profile.jpg ./circle_profile*.png ./mask.png ./qr_image.png ./spider_graph.png`
 end
