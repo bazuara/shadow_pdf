@@ -24,4 +24,4 @@ It will output a pdf inside current folder named LOGINapi_cv.pdf
 Colors are based on current coalition. Enjoy!
 
 ## Sample
-![cv](./bazuara_api_cv.png)
+![cv](./api_cv.png)
