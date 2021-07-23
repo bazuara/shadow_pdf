@@ -201,12 +201,21 @@ Prawn::Document.generate("#{login}_api_cv_.pdf") do |pdf|
   i = 0
   user_data['projects_users'].each do |project|
     if (project['cursus_ids'] == [actual_cursus] &&
-        project['validated?'] == true)
+        project['validated?'] == true &&
+        project['project']['slug'].include?("exam") == false
+       )
       pdf.text_box project['project']['name'].capitalize, size: 12, at: [220, (start_pos - 30  - offset)]
       #load description and skills
-      raw_project = token.get("/v2/projects/#{project['project']['slug']}")
-      project_info = raw_project.parsed
-      text_info =  project_info['project_sessions'].first['description'].gsub(/\n/," ")
+      begin
+        raw_project = token.get("/v2/projects/#{project['project']['slug']}")
+        project_info = raw_project.parsed
+        text_info =  project_info['project_sessions'].first['description'].gsub(/\n/," ")
+      rescue
+        text_info = "No description provided"
+      end 
+      if text_info == nil
+        text_info = "No description provided"
+      end
       pdf.text_box text_info, size: 6, at: [220, (start_pos - 48 - offset)], width: 320
       pdf.text_box "Score #{project['final_mark'].to_s}%", size: 10, at: [470, (start_pos - 30 - offset)], align: :right
       #pdf.text_box "Skills:", size: 10, at: [220, (start_pos - 48 - offset)], align: :right
