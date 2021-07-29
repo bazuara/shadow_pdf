@@ -56,17 +56,18 @@ url_pic = user_data['image_url']
 if coa_data == nil
   coa_name = "No coalition"
   coa_color = "17adad"
-
+  coa_image = './sources/no_coa.png'
 else
   coa_name = coa_data['name']
   coa_color = coa_data['color'][1..-1]
+  puts `wget #{coa_data['image_url']} -O temp_coa.svg 2> /dev/null`
+  puts `convert -background none temp_coa.svg temp_coa.png`
+  puts `convert temp_coa.png -fuzz 90% -fill white -opaque black temp_coa_2.png`
+  coa_image = './temp_coa_2.png'
 end
 piscine_month = user_data['pool_month']
 piscine_year = user_data['pool_year']
 actual_cursus = user_data['cursus_users'].last['cursus_id']
-
-#palceholder images
-coa_image = './sources/metropolis_icon.png'
 
 #Colors
 green = coa_color#'00babc'
@@ -76,7 +77,6 @@ clear_gray = 'E7E7E7'
 dark_grey = '000000'
 
 #Generate skill image
-
 max_scale = 5
 graff = Gruff::Spider.new(max_scale)
 graff.transparent_background = true
@@ -91,7 +91,7 @@ end
 graff.write("spider_graph.png")
 
 #Generate pdf
-Prawn::Document.generate("#{login}_api_cv_.pdf") do |pdf|
+Prawn::Document.generate("#{login.downcase}_api_cv_.pdf") do |pdf|
 
   #generate new rectangle [postition], w, h
 
@@ -169,7 +169,7 @@ Prawn::Document.generate("#{login}_api_cv_.pdf") do |pdf|
   pdf.fill_color white
   pdf.text_box coa_name, at: [85, 369], size: 14, width: 70, overflow: :shrink_to_fit
   #TODO replace fix png with white rendered svg
-  pdf.image './sources/metropolis_icon.png', at: [45, 378], height: 35
+  pdf.image coa_image, at: [45, 378], height: 35
 
   #Contact
   pdf.fill_color white
@@ -239,5 +239,5 @@ Prawn::Document.generate("#{login}_api_cv_.pdf") do |pdf|
   pdf.text_box 'España', size: 8, at: [10, 20]
 
   #Cleanup
-  puts `rm ./temp_profile.jpg ./circle_profile*.png ./mask.png ./qr_image.png ./spider_graph.png`
+  puts `rm temp_profile.jpg circle_profile*.png mask.png qr_image.png spider_graph.png temp_coa.png temp_coa.svg temp_coa_2.png`
 end
